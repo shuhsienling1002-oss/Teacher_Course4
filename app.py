@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 import os
-import random  # 新增：隨機模組
+import random
 from gtts import gTTS
 from io import BytesIO
 
@@ -175,7 +175,6 @@ QA_PAIRS = [
 
 # --- 1.5 智慧語音核心 ---
 def play_audio(text, filename_base=None):
-    # 優先嘗試播放上傳的檔案
     if filename_base:
         for ext in ['m4a', 'mp3']:
             path = f"audio/{filename_base}.{ext}"
@@ -183,7 +182,6 @@ def play_audio(text, filename_base=None):
                 st.audio(path, format=f'audio/{ext}')
                 return
     
-    # 檔案不存在時使用 TTS
     try:
         tts = gTTS(text=text, lang='id')
         fp = BytesIO()
@@ -193,56 +191,47 @@ def play_audio(text, filename_base=None):
     except:
         st.caption("🔇")
 
-# --- 2. 隨機出題邏輯 (核心修改) ---
+# --- 2. 隨機出題邏輯 (已修正洩題 Bug) ---
 
 def init_quiz():
     """初始化或重置測驗題目"""
     st.session_state.score = 0
     st.session_state.current_q = 0
     
-    # --- Q1: 聽力測驗 (隨機選一個單字) ---
+    # --- Q1: 聽力測驗 (聽阿美語，選中文意思) ---
     q1_target = random.choice(VOCABULARY)
-    # 隨機選 2 個錯誤答案
     others = [v for v in VOCABULARY if v['amis'] != q1_target['amis']]
     q1_options = random.sample(others, 2) + [q1_target]
-    random.shuffle(q1_options) # 打亂選項順序
+    random.shuffle(q1_options)
     
     st.session_state.q1_data = {
         "target": q1_target,
         "options": q1_options
     }
 
-    # --- Q2: 填空題 (隨機選一組 食物-味道) ---
+    # --- Q2: 填空題 (修正：選項只留阿美語，不給中文提示) ---
     q2_target = random.choice(QA_PAIRS)
-    # 隨機選 2 個錯誤的味道
-    all_tastes = [p['taste'] for p in QA_PAIRS]
-    wrong_tastes = [t for t in all_tastes if t != q2_target['taste']]
-    # 為了顯示漂亮，選項要包含中文
-    # 這裡稍微複雜一點，要找出錯誤味道對應的中文
-    q2_options_raw = random.sample(wrong_tastes, 2)
-    q2_options = []
     
-    # 加入正確答案
-    q2_options.append(f"{q2_target['taste']} ({q2_target['zh_taste']})")
+    # 找出所有錯誤的味道 (只抓阿美語單字)
+    all_tastes_amis = [p['taste'] for p in QA_PAIRS]
+    wrong_tastes = [t for t in all_tastes_amis if t != q2_target['taste']]
     
-    # 加入錯誤答案 (需找回對應中文)
-    for wt in q2_options_raw:
-        # 找到該味道對應的中文 (隨便找一個符合的即可)
-        match = next((p for p in QA_PAIRS if p['taste'] == wt), None)
-        if match:
-            q2_options.append(f"{match['taste']} ({match['zh_taste']})")
+    # 隨機選 2 個錯誤單字
+    q2_options = random.sample(wrong_tastes, 2)
+    
+    # 加入正確答案 (只加阿美語)
+    q2_options.append(q2_target['taste'])
             
     random.shuffle(q2_options)
     
     st.session_state.q2_data = {
         "target": q2_target,
         "options": q2_options,
-        "correct_str": f"{q2_target['taste']} ({q2_target['zh_taste']})"
+        "correct_ans": q2_target['taste'] # 正確答案是純阿美語
     }
 
-    # --- Q3: 句子理解 (隨機選一個句子) ---
+    # --- Q3: 句子理解 (聽阿美語，選中文意思) ---
     q3_target = random.choice(SENTENCES)
-    # 隨機選 2 個錯誤的中文意思
     other_sentences = [s['zh'] for s in SENTENCES if s['zh'] != q3_target['zh']]
     q3_options = random.sample(other_sentences, 2) + [q3_target['zh']]
     random.shuffle(q3_options)
@@ -263,7 +252,7 @@ def show_learning_mode():
         <div style='text-align: center; margin-bottom: 30px;'>
             <h2 style='color: #BF360C !important; font-size: 32px; margin: 0; font-weight:800;'>Sanek</h2>
             <div style='color: #FF6F00 !important; font-size: 18px; margin-top: 8px; font-weight:500;'>
-                — 是什麼味道？ —
+                — O Maan a Sanek? (是什麼味道？) —
             </div>
             <div style='color: #8D6E63 !important; font-size: 15px; margin-top: 15px; font-weight: 500;'>
                 講師：高春美 &nbsp;&nbsp; 教材提供者：高春美
@@ -324,7 +313,7 @@ def show_quiz_mode():
         
         for idx, opt in enumerate(data['options']):
             with cols[idx]:
-                # 按鈕顯示 Emoji + 中文
+                # Q1 聽力題，選項保留中文輔助
                 if st.button(f"{opt['emoji']} {opt['zh']}"):
                     if opt['amis'] == target['amis']:
                         st.balloons()
@@ -336,7 +325,7 @@ def show_quiz_mode():
                     else:
                         st.error(f"不對喔，{opt['zh']} 是 {opt['amis']}")
 
-    # --- Q2 顯示邏輯 ---
+    # --- Q2 顯示邏輯 (已移除中文提示) ---
     elif st.session_state.current_q == 1:
         data = st.session_state.q2_data
         target = data['target']
@@ -351,18 +340,19 @@ def show_quiz_mode():
         </div>
         """, unsafe_allow_html=True)
         
+        # 選項現在只有阿美語，沒有中文了
         ans = st.radio("請選擇正確的單字：", data['options'])
         
         if st.button("確定送出"):
-            if ans == data['correct_str']:
+            if ans == data['correct_ans']:
                 st.balloons()
-                st.success(f"太棒了！{target['food']} 真的很 {target['zh_taste']}！")
+                st.success(f"太棒了！{ans} 就是 {target['zh_taste']}！")
                 time.sleep(1.5)
                 st.session_state.score += 1
                 st.session_state.current_q += 1
                 st.rerun()
             else:
-                st.error("再想一下，這個食物的味道是什麼？")
+                st.error("再想一下，這個單字的意思不對喔！")
 
     # --- Q3 顯示邏輯 ---
     elif st.session_state.current_q == 2:
@@ -396,7 +386,6 @@ def show_quiz_mode():
         </div>
         """, unsafe_allow_html=True)
         
-        # 點擊這裡會重新隨機出題
         if st.button("🔄 再玩一次 (題目會變喔)"):
             init_quiz() # 重新抽題
             st.rerun()
@@ -415,4 +404,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
