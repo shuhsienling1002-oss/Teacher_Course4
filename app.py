@@ -13,85 +13,92 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- CSS 最佳視覺設計 (美食風格) ---
+# --- CSS 視覺設計 (方案 A：原野豐收風 🌿) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
 
+    /* 全局背景：清爽的淡綠色，像清晨的田野 */
     .stApp { 
-        background-color: #FFF8E1; 
+        background-color: #F1F8E9; 
         font-family: 'Noto Sans TC', sans-serif;
     }
     
     .block-container { padding-top: 2rem !important; padding-bottom: 5rem !important; }
     
+    /* 標題：使用深綠色漸層，象徵植物的生命力 */
     h1 {
         font-family: 'Helvetica Neue', sans-serif;
-        background: linear-gradient(120deg, #D84315, #FF8F00);
+        background: linear-gradient(120deg, #2E7D32, #827717);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 900 !important;
         text-align: center;
         padding-bottom: 10px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        text-shadow: 0px 2px 4px rgba(0,0,0,0.1);
     }
     
+    /* 文字顏色：深橄欖綠，閱讀起來很舒適 */
     p, div, span, label, li {
-        color: #4E342E !important;
+        color: #33691E !important;
     }
 
+    /* 按鈕：像葉子一樣的翠綠色 */
     .stButton>button {
         width: 100%;
         border-radius: 25px;
         font-size: 18px;
         font-weight: 700;
-        background: linear-gradient(90deg, #FF6F00 0%, #FF8F00 100%);
+        background: linear-gradient(90deg, #43A047 0%, #66BB6A 100%);
         color: #FFFFFF !important;
         border: none;
         padding: 12px 0px;
-        box-shadow: 0px 4px 10px rgba(255, 111, 0, 0.3);
+        box-shadow: 0px 4px 10px rgba(67, 160, 71, 0.3);
         transition: all 0.3s ease;
     }
     .stButton>button:hover {
         transform: translateY(-2px);
-        box-shadow: 0px 6px 15px rgba(255, 111, 0, 0.5);
-        background: linear-gradient(90deg, #EF6C00 0%, #FFA000 100%);
+        box-shadow: 0px 6px 15px rgba(67, 160, 71, 0.5);
+        background: linear-gradient(90deg, #2E7D32 0%, #43A047 100%);
     }
     
+    /* 卡片：乾淨的白色，配上綠色邊框 */
     .card {
         background-color: #FFFFFF;
         padding: 20px;
         border-radius: 24px;
         text-align: center;
         margin-bottom: 20px;
-        border: 1px solid #FFE0B2;
-        box-shadow: 0 8px 20px rgba(78, 52, 46, 0.05);
+        border: 2px solid #DCEDC8; /* 淺綠邊框 */
+        box-shadow: 0 8px 20px rgba(51, 105, 30, 0.05);
         transition: transform 0.2s ease;
     }
     .card:hover {
         transform: translateY(-5px);
-        border-color: #FFB74D;
+        border-color: #8BC34A;
     }
     
+    /* 句子卡片：左側改為深綠色線條 */
     .sentence-card {
         background-color: #FFFFFF;
         padding: 20px 25px;
         border-radius: 16px;
         margin-bottom: 15px;
-        border-left: 5px solid #FF6F00;
+        border-left: 6px solid #558B2F;
         box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     }
     
+    /* 大字體：強調色改為暖橘色，在綠色背景中跳出來 */
     .big-font {
         font-size: 26px !important;
         font-weight: 800;
-        color: #BF360C !important;
+        color: #E65100 !important; 
         margin: 8px 0;
         letter-spacing: 0.5px;
     }
     .med-font {
         font-size: 16px !important;
-        color: #8D6E63 !important;
+        color: #558B2F !important;
         font-weight: 500;
         margin-bottom: 12px;
     }
@@ -101,36 +108,39 @@ st.markdown("""
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
     }
     
+    /* 動作標籤：改為清新的草綠色背景 */
     .action-tag {
-        color: #E65100 !important;
+        color: #1B5E20 !important;
         font-size: 13px;
         font-weight: 600;
-        background: #FFCCBC;
+        background: #DCEDC8;
         padding: 4px 12px;
         border-radius: 12px;
         display: inline-block;
     }
 
+    /* Tab 樣式 */
     .stTabs [data-baseweb="tab-list"] { gap: 8px; }
     .stTabs [data-baseweb="tab"] {
         background-color: rgba(255,255,255,0.6);
         border-radius: 10px;
         padding: 8px 16px;
         font-weight: 600;
-        color: #5D4037 !important;
+        color: #33691E !important;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #FF8F00 !important;
+        background-color: #66BB6A !important;
         color: #FFFFFF !important;
     }
     
     .stRadio label {
         font-size: 18px !important;
         padding: 10px;
-        background: rgba(255,255,255,0.5);
+        background: rgba(255,255,255,0.8);
         border-radius: 10px;
         margin-bottom: 5px;
         display: block;
+        border: 1px solid #DCEDC8;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -250,11 +260,11 @@ if 'q1_data' not in st.session_state:
 def show_learning_mode():
     st.markdown("""
         <div style='text-align: center; margin-bottom: 30px;'>
-            <h2 style='color: #BF360C !important; font-size: 32px; margin: 0; font-weight:800;'>Sanek</h2>
-            <div style='color: #FF6F00 !important; font-size: 18px; margin-top: 8px; font-weight:500;'>
+            <h2 style='color: #2E7D32 !important; font-size: 32px; margin: 0; font-weight:800;'>Sanek</h2>
+            <div style='color: #558B2F !important; font-size: 18px; margin-top: 8px; font-weight:500;'>
                 — O Maan a Sanek? (是什麼味道？) —
             </div>
-            <div style='color: #8D6E63 !important; font-size: 15px; margin-top: 15px; font-weight: 500;'>
+            <div style='color: #33691E !important; font-size: 15px; margin-top: 15px; font-weight: 500;'>
                 講師：高春美 &nbsp;&nbsp; 教材提供者：高春美
             </div>
         </div>
@@ -286,10 +296,10 @@ def show_learning_mode():
     for s in SENTENCES:
         st.markdown(f"""
         <div class="sentence-card">
-            <div style="font-size: 20px; font-weight:800; color:#BF360C !important; margin-bottom: 8px;">
+            <div style="font-size: 20px; font-weight:800; color:#E65100 !important; margin-bottom: 8px;">
                 {s['amis']}
             </div>
-            <div style="color:#5D4037 !important; font-size: 16px;">{s['zh']}</div>
+            <div style="color:#33691E !important; font-size: 16px;">{s['zh']}</div>
         </div>
         """, unsafe_allow_html=True)
         play_audio(s['amis'], filename_base=s['file'])
@@ -334,7 +344,7 @@ def show_quiz_mode():
         st.markdown(f"當你吃到 **{target['zh_food']} ({target['food']})**，你會說：")
         
         st.markdown(f"""
-        <div style="background:#FFFFFF; padding:20px; border-radius:15px; border-left: 6px solid #FF6F00; margin: 15px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        <div style="background:#FFFFFF; padding:20px; border-radius:15px; border-left: 6px solid #558B2F; margin: 15px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
             <span style="font-size:20px; color:#333 !important;">Tada <b>_______</b> ko {target['food']}!</span>
             <br><span style="color:#888; font-size:15px;">({target['zh_food']}好{target['zh_taste']}！)</span>
         </div>
@@ -380,8 +390,8 @@ def show_quiz_mode():
     else:
         st.markdown(f"""
         <div style='text-align: center; padding: 40px; background-color: #FFFFFF; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);'>
-            <h1 style='color: #E65100 !important; margin-bottom:10px;'>🎉 挑戰成功！</h1>
-            <p style='font-size: 20px; color: #5D4037 !important;'>你的聽力越來越好了！</p>
+            <h1 style='color: #2E7D32 !important; margin-bottom:10px;'>🎉 挑戰成功！</h1>
+            <p style='font-size: 20px; color: #33691E !important;'>你的聽力越來越好了！</p>
             <div style='font-size: 80px; margin: 20px 0;'>🥘</div>
         </div>
         """, unsafe_allow_html=True)
