@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 import os
+import random  # 新增：隨機模組
 from gtts import gTTS
 from io import BytesIO
 
@@ -15,19 +16,15 @@ st.set_page_config(
 # --- CSS 最佳視覺設計 (美食風格) ---
 st.markdown("""
     <style>
-    /* 全局字體導入 */
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
 
-    /* 全局背景：溫暖的奶油米色 */
     .stApp { 
         background-color: #FFF8E1; 
         font-family: 'Noto Sans TC', sans-serif;
     }
     
-    /* 調整頂部留白 */
     .block-container { padding-top: 2rem !important; padding-bottom: 5rem !important; }
     
-    /* 大標題：Sanek - 漸層美味色調 */
     h1 {
         font-family: 'Helvetica Neue', sans-serif;
         background: linear-gradient(120deg, #D84315, #FF8F00);
@@ -39,12 +36,10 @@ st.markdown("""
         text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
     
-    /* 一般文字：使用深咖啡色 */
     p, div, span, label, li {
         color: #4E342E !important;
     }
 
-    /* 按鈕：像是一道美味的料理 */
     .stButton>button {
         width: 100%;
         border-radius: 25px;
@@ -63,7 +58,6 @@ st.markdown("""
         background: linear-gradient(90deg, #EF6C00 0%, #FFA000 100%);
     }
     
-    /* 單字卡片 */
     .card {
         background-color: #FFFFFF;
         padding: 20px;
@@ -79,7 +73,6 @@ st.markdown("""
         border-color: #FFB74D;
     }
     
-    /* 句子卡片 */
     .sentence-card {
         background-color: #FFFFFF;
         padding: 20px 25px;
@@ -89,7 +82,6 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     }
     
-    /* 字體樣式 */
     .big-font {
         font-size: 26px !important;
         font-weight: 800;
@@ -109,7 +101,6 @@ st.markdown("""
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
     }
     
-    /* 動作標籤 */
     .action-tag {
         color: #E65100 !important;
         font-size: 13px;
@@ -120,7 +111,6 @@ st.markdown("""
         display: inline-block;
     }
 
-    /* Tab 樣式優化 */
     .stTabs [data-baseweb="tab-list"] { gap: 8px; }
     .stTabs [data-baseweb="tab"] {
         background-color: rgba(255,255,255,0.6);
@@ -134,7 +124,6 @@ st.markdown("""
         color: #FFFFFF !important;
     }
     
-    /* Radio 選項優化 */
     .stRadio label {
         font-size: 18px !important;
         padding: 10px;
@@ -175,8 +164,18 @@ SENTENCES = [
     {"amis": "Tada kahcid ko cilah.",   "zh": "鹽巴好鹹！",       "file": "s_kahcid_cilah"},
 ]
 
+# 為了 Q2 填空題，建立「食物-味道」對應表
+QA_PAIRS = [
+    {"food": "mami'", "taste": "'acicim", "zh_food": "柑橘", "zh_taste": "酸"},
+    {"food": "tefos", "taste": "micedem", "zh_food": "甘蔗", "zh_taste": "甜"},
+    {"food": "kakorot", "taste": "'angrer", "zh_food": "苦瓜", "zh_taste": "苦"},
+    {"food": "tamaniki", "taste": "kaedah", "zh_food": "洋蔥", "zh_taste": "辣"},
+    {"food": "cilah", "taste": "kahcid", "zh_food": "鹽巴", "zh_taste": "鹹"},
+]
+
 # --- 1.5 智慧語音核心 ---
 def play_audio(text, filename_base=None):
+    # 優先嘗試播放上傳的檔案
     if filename_base:
         for ext in ['m4a', 'mp3']:
             path = f"audio/{filename_base}.{ext}"
@@ -184,6 +183,7 @@ def play_audio(text, filename_base=None):
                 st.audio(path, format=f'audio/{ext}')
                 return
     
+    # 檔案不存在時使用 TTS
     try:
         tts = gTTS(text=text, lang='id')
         fp = BytesIO()
@@ -193,11 +193,68 @@ def play_audio(text, filename_base=None):
     except:
         st.caption("🔇")
 
-# --- 2. 狀態管理 ---
-if 'score' not in st.session_state:
+# --- 2. 隨機出題邏輯 (核心修改) ---
+
+def init_quiz():
+    """初始化或重置測驗題目"""
     st.session_state.score = 0
-if 'current_q' not in st.session_state:
     st.session_state.current_q = 0
+    
+    # --- Q1: 聽力測驗 (隨機選一個單字) ---
+    q1_target = random.choice(VOCABULARY)
+    # 隨機選 2 個錯誤答案
+    others = [v for v in VOCABULARY if v['amis'] != q1_target['amis']]
+    q1_options = random.sample(others, 2) + [q1_target]
+    random.shuffle(q1_options) # 打亂選項順序
+    
+    st.session_state.q1_data = {
+        "target": q1_target,
+        "options": q1_options
+    }
+
+    # --- Q2: 填空題 (隨機選一組 食物-味道) ---
+    q2_target = random.choice(QA_PAIRS)
+    # 隨機選 2 個錯誤的味道
+    all_tastes = [p['taste'] for p in QA_PAIRS]
+    wrong_tastes = [t for t in all_tastes if t != q2_target['taste']]
+    # 為了顯示漂亮，選項要包含中文
+    # 這裡稍微複雜一點，要找出錯誤味道對應的中文
+    q2_options_raw = random.sample(wrong_tastes, 2)
+    q2_options = []
+    
+    # 加入正確答案
+    q2_options.append(f"{q2_target['taste']} ({q2_target['zh_taste']})")
+    
+    # 加入錯誤答案 (需找回對應中文)
+    for wt in q2_options_raw:
+        # 找到該味道對應的中文 (隨便找一個符合的即可)
+        match = next((p for p in QA_PAIRS if p['taste'] == wt), None)
+        if match:
+            q2_options.append(f"{match['taste']} ({match['zh_taste']})")
+            
+    random.shuffle(q2_options)
+    
+    st.session_state.q2_data = {
+        "target": q2_target,
+        "options": q2_options,
+        "correct_str": f"{q2_target['taste']} ({q2_target['zh_taste']})"
+    }
+
+    # --- Q3: 句子理解 (隨機選一個句子) ---
+    q3_target = random.choice(SENTENCES)
+    # 隨機選 2 個錯誤的中文意思
+    other_sentences = [s['zh'] for s in SENTENCES if s['zh'] != q3_target['zh']]
+    q3_options = random.sample(other_sentences, 2) + [q3_target['zh']]
+    random.shuffle(q3_options)
+    
+    st.session_state.q3_data = {
+        "target": q3_target,
+        "options": q3_options
+    }
+
+# 如果是第一次執行，初始化題目
+if 'q1_data' not in st.session_state:
+    init_quiz()
 
 # --- 3. 介面邏輯 ---
 
@@ -206,9 +263,8 @@ def show_learning_mode():
         <div style='text-align: center; margin-bottom: 30px;'>
             <h2 style='color: #BF360C !important; font-size: 32px; margin: 0; font-weight:800;'>Sanek</h2>
             <div style='color: #FF6F00 !important; font-size: 18px; margin-top: 8px; font-weight:500;'>
-                — 是什麼味道？ —
+                — O Maan a Sanek? (是什麼味道？) —
             </div>
-            <!-- 👇 講師資訊加在這裡 -->
             <div style='color: #8D6E63 !important; font-size: 15px; margin-top: 15px; font-weight: 500;'>
                 講師：高春美 &nbsp;&nbsp; 教材提供者：高春美
             </div>
@@ -250,85 +306,99 @@ def show_learning_mode():
         play_audio(s['amis'], filename_base=s['file'])
 
 def show_quiz_mode():
-    st.markdown("<h3 style='text-align: center; color: #E65100 !important; margin-bottom: 20px;'>🏆 味道挑戰賽</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #E65100 !important; margin-bottom: 20px;'>🏆 隨機挑戰賽</h3>", unsafe_allow_html=True)
     
     st.progress(st.session_state.current_q / 3)
     st.write("") 
 
+    # --- Q1 顯示邏輯 ---
     if st.session_state.current_q == 0:
-        # Q1: 聽力測驗
+        data = st.session_state.q1_data
+        target = data['target']
+        
         st.markdown("**第 1 關：聽聽看，這是什麼味道？**")
-        play_audio("micedem", filename_base="v_micedem")
+        play_audio(target['amis'], filename_base=target['file'])
         
         st.write("")
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button("🍋 好酸"): st.error("不對喔，酸是 'acicim")
-        with col2:
-            if st.button("🍬 好甜"): 
-                st.balloons()
-                st.success("答對了！Micedem 就是甜！")
-                time.sleep(1.5)
-                st.session_state.score += 1
-                st.session_state.current_q += 1
-                st.rerun()
-        with col3:
-            if st.button("🌶️ 好辣"): st.error("不對喔，辣是 kaedah")
-
-    elif st.session_state.current_q == 1:
-        # Q2: 填空題
-        st.markdown("**第 2 關：我是翻譯官**")
-        st.markdown("當你吃到 **洋蔥 (Tamaniki)**，你會說：")
+        cols = st.columns(3)
         
-        st.markdown("""
+        for idx, opt in enumerate(data['options']):
+            with cols[idx]:
+                # 按鈕顯示 Emoji + 中文
+                if st.button(f"{opt['emoji']} {opt['zh']}"):
+                    if opt['amis'] == target['amis']:
+                        st.balloons()
+                        st.success(f"答對了！{target['amis']} 就是 {target['zh']}！")
+                        time.sleep(1.5)
+                        st.session_state.score += 1
+                        st.session_state.current_q += 1
+                        st.rerun()
+                    else:
+                        st.error(f"不對喔，{opt['zh']} 是 {opt['amis']}")
+
+    # --- Q2 顯示邏輯 ---
+    elif st.session_state.current_q == 1:
+        data = st.session_state.q2_data
+        target = data['target']
+        
+        st.markdown("**第 2 關：我是翻譯官**")
+        st.markdown(f"當你吃到 **{target['zh_food']} ({target['food']})**，你會說：")
+        
+        st.markdown(f"""
         <div style="background:#FFFFFF; padding:20px; border-radius:15px; border-left: 6px solid #FF6F00; margin: 15px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-            <span style="font-size:20px; color:#333 !important;">Tada <b>_______</b> ko tamaniki!</span>
-            <br><span style="color:#888; font-size:15px;">(洋蔥好辣！)</span>
+            <span style="font-size:20px; color:#333 !important;">Tada <b>_______</b> ko {target['food']}!</span>
+            <br><span style="color:#888; font-size:15px;">({target['zh_food']}好{target['zh_taste']}！)</span>
         </div>
         """, unsafe_allow_html=True)
         
-        options = ["micedem (甜)", "kaedah (辣)", "kahcid (鹹)"]
-        ans = st.radio("請選擇正確的單字：", options)
+        ans = st.radio("請選擇正確的單字：", data['options'])
         
         if st.button("確定送出"):
-            if "kaedah" in ans:
+            if ans == data['correct_str']:
                 st.balloons()
-                st.success("太棒了！Kaedah 就是辣！")
+                st.success(f"太棒了！{target['food']} 真的很 {target['zh_taste']}！")
                 time.sleep(1.5)
                 st.session_state.score += 1
                 st.session_state.current_q += 1
                 st.rerun()
             else:
-                st.error("再想一下，洋蔥會讓人流眼淚喔！")
+                st.error("再想一下，這個食物的味道是什麼？")
 
+    # --- Q3 顯示邏輯 ---
     elif st.session_state.current_q == 2:
-        # Q3: 句子理解
+        data = st.session_state.q3_data
+        target = data['target']
+        
         st.markdown("**第 3 關：終極挑戰**")
         st.markdown("請聽這句話，選出正確的意思：")
-        play_audio("'Angrer ko kakorot!", filename_base="s_angrer_kakorot")
+        play_audio(target['amis'], filename_base=target['file'])
         
-        if st.button("苦瓜好苦！"):
-            st.balloons()
-            st.success("全對！你是阿美語美食家！👨‍🍳")
-            time.sleep(1.5)
-            st.session_state.score += 1
-            st.session_state.current_q += 1
-            st.rerun()
-        if st.button("甘蔗好甜！"): st.error("不對喔，那是 tefos")
-        if st.button("鹽巴好鹹！"): st.error("不對喔，那是 cilah")
+        # 顯示選項
+        for opt_text in data['options']:
+            if st.button(opt_text):
+                if opt_text == target['zh']:
+                    st.balloons()
+                    st.success("全對！你是阿美語美食家！👨‍🍳")
+                    time.sleep(1.5)
+                    st.session_state.score += 1
+                    st.session_state.current_q += 1
+                    st.rerun()
+                else:
+                    st.error("不對喔，再聽一次看看！")
 
+    # --- 結算畫面 ---
     else:
         st.markdown(f"""
         <div style='text-align: center; padding: 40px; background-color: #FFFFFF; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);'>
             <h1 style='color: #E65100 !important; margin-bottom:10px;'>🎉 挑戰成功！</h1>
-            <p style='font-size: 20px; color: #5D4037 !important;'>你學會了所有的 Sanek (味道)！</p>
+            <p style='font-size: 20px; color: #5D4037 !important;'>你的聽力越來越好了！</p>
             <div style='font-size: 80px; margin: 20px 0;'>🥘</div>
         </div>
         """, unsafe_allow_html=True)
         
-        if st.button("再玩一次"):
-            st.session_state.current_q = 0
-            st.session_state.score = 0
+        # 點擊這裡會重新隨機出題
+        if st.button("🔄 再玩一次 (題目會變喔)"):
+            init_quiz() # 重新抽題
             st.rerun()
 
 # --- 4. 主程式 ---
