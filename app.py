@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- CSS 視覺設計 (方案 C：熱情饗宴風 🌶️) ---
+# --- CSS 視覺設計 (方案 C：熱情饗宴風 🌶️ - 修正標題版) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
@@ -26,18 +26,23 @@ st.markdown("""
     
     .block-container { padding-top: 2rem !important; padding-bottom: 5rem !important; }
     
-    /* 標題：熱情的紅橘漸層，像火一樣 */
+    /* 修正 h1：把漸層拿掉，改用 class 控制，避免 emoji 消失 */
     h1 {
         font-family: 'Helvetica Neue', sans-serif;
-        background: linear-gradient(120deg, #C62828, #FF6F00);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
         font-weight: 900 !important;
         text-align: center;
         padding-bottom: 10px;
         text-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 0px;
     }
     
+    /* 專門給文字用的漸層 class */
+    .spicy-text {
+        background: linear-gradient(120deg, #C62828, #FF6F00);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
     /* 文字顏色：深褐色，對比清晰 */
     p, div, span, label, li {
         color: #4E342E !important;
@@ -174,7 +179,6 @@ SENTENCES = [
     {"amis": "Tada kahcid ko cilah.",   "zh": "鹽巴好鹹！",       "file": "s_kahcid_cilah"},
 ]
 
-# 為了 Q2 填空題，建立「食物-味道」對應表
 QA_PAIRS = [
     {"food": "mami'", "taste": "'acicim", "zh_food": "柑橘", "zh_taste": "酸"},
     {"food": "tefos", "taste": "micedem", "zh_food": "甘蔗", "zh_taste": "甜"},
@@ -201,57 +205,35 @@ def play_audio(text, filename_base=None):
     except:
         st.caption("🔇")
 
-# --- 2. 隨機出題邏輯 (已修正洩題 Bug) ---
+# --- 2. 隨機出題邏輯 ---
 
 def init_quiz():
-    """初始化或重置測驗題目"""
     st.session_state.score = 0
     st.session_state.current_q = 0
     
-    # --- Q1: 聽力測驗 (聽阿美語，選中文意思) ---
+    # Q1
     q1_target = random.choice(VOCABULARY)
     others = [v for v in VOCABULARY if v['amis'] != q1_target['amis']]
     q1_options = random.sample(others, 2) + [q1_target]
     random.shuffle(q1_options)
-    
-    st.session_state.q1_data = {
-        "target": q1_target,
-        "options": q1_options
-    }
+    st.session_state.q1_data = {"target": q1_target, "options": q1_options}
 
-    # --- Q2: 填空題 (修正：選項只留阿美語，不給中文提示) ---
+    # Q2 (選項只留阿美語)
     q2_target = random.choice(QA_PAIRS)
-    
-    # 找出所有錯誤的味道 (只抓阿美語單字)
     all_tastes_amis = [p['taste'] for p in QA_PAIRS]
     wrong_tastes = [t for t in all_tastes_amis if t != q2_target['taste']]
-    
-    # 隨機選 2 個錯誤單字
     q2_options = random.sample(wrong_tastes, 2)
-    
-    # 加入正確答案 (只加阿美語)
     q2_options.append(q2_target['taste'])
-            
     random.shuffle(q2_options)
-    
-    st.session_state.q2_data = {
-        "target": q2_target,
-        "options": q2_options,
-        "correct_ans": q2_target['taste'] # 正確答案是純阿美語
-    }
+    st.session_state.q2_data = {"target": q2_target, "options": q2_options, "correct_ans": q2_target['taste']}
 
-    # --- Q3: 句子理解 (聽阿美語，選中文意思) ---
+    # Q3
     q3_target = random.choice(SENTENCES)
     other_sentences = [s['zh'] for s in SENTENCES if s['zh'] != q3_target['zh']]
     q3_options = random.sample(other_sentences, 2) + [q3_target['zh']]
     random.shuffle(q3_options)
-    
-    st.session_state.q3_data = {
-        "target": q3_target,
-        "options": q3_options
-    }
+    st.session_state.q3_data = {"target": q3_target, "options": q3_options}
 
-# 如果是第一次執行，初始化題目
 if 'q1_data' not in st.session_state:
     init_quiz()
 
@@ -310,20 +292,15 @@ def show_quiz_mode():
     st.progress(st.session_state.current_q / 3)
     st.write("") 
 
-    # --- Q1 顯示邏輯 ---
     if st.session_state.current_q == 0:
         data = st.session_state.q1_data
         target = data['target']
-        
         st.markdown("**第 1 關：聽聽看，這是什麼味道？**")
         play_audio(target['amis'], filename_base=target['file'])
-        
         st.write("")
         cols = st.columns(3)
-        
         for idx, opt in enumerate(data['options']):
             with cols[idx]:
-                # Q1 聽力題，選項保留中文輔助
                 if st.button(f"{opt['emoji']} {opt['zh']}"):
                     if opt['amis'] == target['amis']:
                         st.balloons()
@@ -335,24 +312,18 @@ def show_quiz_mode():
                     else:
                         st.error(f"不對喔，{opt['zh']} 是 {opt['amis']}")
 
-    # --- Q2 顯示邏輯 (已移除中文提示) ---
     elif st.session_state.current_q == 1:
         data = st.session_state.q2_data
         target = data['target']
-        
         st.markdown("**第 2 關：我是翻譯官**")
         st.markdown(f"當你吃到 **{target['zh_food']} ({target['food']})**，你會說：")
-        
         st.markdown(f"""
         <div style="background:#FFFFFF; padding:20px; border-radius:15px; border-left: 6px solid #D32F2F; margin: 15px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
             <span style="font-size:20px; color:#333 !important;">Tada <b>_______</b> ko {target['food']}!</span>
             <br><span style="color:#888; font-size:15px;">({target['zh_food']}好{target['zh_taste']}！)</span>
         </div>
         """, unsafe_allow_html=True)
-        
-        # 選項現在只有阿美語，沒有中文了
         ans = st.radio("請選擇正確的單字：", data['options'])
-        
         if st.button("確定送出"):
             if ans == data['correct_ans']:
                 st.balloons()
@@ -364,16 +335,12 @@ def show_quiz_mode():
             else:
                 st.error("再想一下，這個單字的意思不對喔！")
 
-    # --- Q3 顯示邏輯 ---
     elif st.session_state.current_q == 2:
         data = st.session_state.q3_data
         target = data['target']
-        
         st.markdown("**第 3 關：終極挑戰**")
         st.markdown("請聽這句話，選出正確的意思：")
         play_audio(target['amis'], filename_base=target['file'])
-        
-        # 顯示選項
         for opt_text in data['options']:
             if st.button(opt_text):
                 if opt_text == target['zh']:
@@ -386,7 +353,6 @@ def show_quiz_mode():
                 else:
                     st.error("不對喔，再聽一次看看！")
 
-    # --- 結算畫面 ---
     else:
         st.markdown(f"""
         <div style='text-align: center; padding: 40px; background-color: #FFFFFF; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);'>
@@ -395,14 +361,19 @@ def show_quiz_mode():
             <div style='font-size: 80px; margin: 20px 0;'>🥘</div>
         </div>
         """, unsafe_allow_html=True)
-        
         if st.button("🔄 再玩一次 (題目會變喔)"):
-            init_quiz() # 重新抽題
+            init_quiz()
             st.rerun()
 
 # --- 4. 主程式 ---
 def main():
-    st.title("阿美語小教室 🏫")
+    # 修正這裡：使用 HTML 手動組合，把文字(漸層)和 Emoji(原色) 分開
+    st.markdown("""
+        <h1>
+            <span class="spicy-text">阿美語小教室</span> 
+            <span>🏫</span>
+        </h1>
+    """, unsafe_allow_html=True)
     
     tab1, tab2 = st.tabs(["📖 學習單詞", "🎮 練習挑戰"])
     
