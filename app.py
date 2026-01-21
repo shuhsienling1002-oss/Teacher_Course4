@@ -18,7 +18,7 @@ st.markdown("""
     /* 全局字體導入 */
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
 
-    /* 全局背景：溫暖的奶油米色，像餐桌布 */
+    /* 全局背景：溫暖的奶油米色 */
     .stApp { 
         background-color: #FFF8E1; 
         font-family: 'Noto Sans TC', sans-serif;
@@ -39,7 +39,7 @@ st.markdown("""
         text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
     
-    /* 一般文字：使用深咖啡色，比純黑更有質感 */
+    /* 一般文字：使用深咖啡色 */
     p, div, span, label, li {
         color: #4E342E !important;
     }
@@ -63,15 +63,15 @@ st.markdown("""
         background: linear-gradient(90deg, #EF6C00 0%, #FFA000 100%);
     }
     
-    /* 單字卡片：乾淨的白色圓角卡片 */
+    /* 單字卡片 */
     .card {
         background-color: #FFFFFF;
         padding: 20px;
         border-radius: 24px;
         text-align: center;
         margin-bottom: 20px;
-        border: 1px solid #FFE0B2; /* 淡淡的橘色邊框 */
-        box-shadow: 0 8px 20px rgba(78, 52, 46, 0.05); /* 柔和陰影 */
+        border: 1px solid #FFE0B2;
+        box-shadow: 0 8px 20px rgba(78, 52, 46, 0.05);
         transition: transform 0.2s ease;
     }
     .card:hover {
@@ -79,13 +79,13 @@ st.markdown("""
         border-color: #FFB74D;
     }
     
-    /* 句子卡片：像便條紙一樣 */
+    /* 句子卡片 */
     .sentence-card {
         background-color: #FFFFFF;
         padding: 20px 25px;
         border-radius: 16px;
         margin-bottom: 15px;
-        border-left: 5px solid #FF6F00; /* 左側橘色強調 */
+        border-left: 5px solid #FF6F00;
         box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     }
     
@@ -93,13 +93,13 @@ st.markdown("""
     .big-font {
         font-size: 26px !important;
         font-weight: 800;
-        color: #BF360C !important; /* 深橘紅 */
+        color: #BF360C !important;
         margin: 8px 0;
         letter-spacing: 0.5px;
     }
     .med-font {
         font-size: 16px !important;
-        color: #8D6E63 !important; /* 淺咖啡色 */
+        color: #8D6E63 !important;
         font-weight: 500;
         margin-bottom: 12px;
     }
@@ -206,7 +206,11 @@ def show_learning_mode():
         <div style='text-align: center; margin-bottom: 30px;'>
             <h2 style='color: #BF360C !important; font-size: 32px; margin: 0; font-weight:800;'>Sanek</h2>
             <div style='color: #FF6F00 !important; font-size: 18px; margin-top: 8px; font-weight:500;'>
-                — O Maan a Sanek? (是什麼味道？) —
+                — 是什麼味道？ —
+            </div>
+            <!-- 👇 講師資訊加在這裡 -->
+            <div style='color: #8D6E63 !important; font-size: 15px; margin-top: 15px; font-weight: 500;'>
+                講師：高春美 &nbsp;&nbsp; 教材提供者：高春美
             </div>
         </div>
         """, unsafe_allow_html=True)
