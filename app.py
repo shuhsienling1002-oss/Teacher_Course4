@@ -13,79 +13,86 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- CSS 最佳視覺設計 (美食風格) ---
+# --- CSS 視覺設計 (方案 C：熱情饗宴風 🌶️) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
 
+    /* 全局背景：淡淡的暖粉白，像熱鬧的氛圍 */
     .stApp { 
-        background-color: #FFF8E1; 
+        background-color: #FFF5F5; 
         font-family: 'Noto Sans TC', sans-serif;
     }
     
     .block-container { padding-top: 2rem !important; padding-bottom: 5rem !important; }
     
+    /* 標題：熱情的紅橘漸層，像火一樣 */
     h1 {
         font-family: 'Helvetica Neue', sans-serif;
-        background: linear-gradient(120deg, #D84315, #FF8F00);
+        background: linear-gradient(120deg, #C62828, #FF6F00);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 900 !important;
         text-align: center;
         padding-bottom: 10px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        text-shadow: 0px 2px 4px rgba(0,0,0,0.1);
     }
     
+    /* 文字顏色：深褐色，對比清晰 */
     p, div, span, label, li {
         color: #4E342E !important;
     }
 
+    /* 按鈕：辣椒紅漸層，非常吸睛 */
     .stButton>button {
         width: 100%;
         border-radius: 25px;
         font-size: 18px;
         font-weight: 700;
-        background: linear-gradient(90deg, #FF6F00 0%, #FF8F00 100%);
+        background: linear-gradient(90deg, #D32F2F 0%, #FF5252 100%);
         color: #FFFFFF !important;
         border: none;
         padding: 12px 0px;
-        box-shadow: 0px 4px 10px rgba(255, 111, 0, 0.3);
+        box-shadow: 0px 4px 10px rgba(211, 47, 47, 0.3);
         transition: all 0.3s ease;
     }
     .stButton>button:hover {
         transform: translateY(-2px);
-        box-shadow: 0px 6px 15px rgba(255, 111, 0, 0.5);
-        background: linear-gradient(90deg, #EF6C00 0%, #FFA000 100%);
+        box-shadow: 0px 6px 15px rgba(211, 47, 47, 0.5);
+        background: linear-gradient(90deg, #B71C1C 0%, #D32F2F 100%);
     }
     
+    /* 卡片：白色背景，配上淡紅邊框 */
     .card {
         background-color: #FFFFFF;
         padding: 20px;
         border-radius: 24px;
         text-align: center;
         margin-bottom: 20px;
-        border: 1px solid #FFE0B2;
-        box-shadow: 0 8px 20px rgba(78, 52, 46, 0.05);
+        border: 2px solid #FFCDD2; /* 淡紅邊框 */
+        box-shadow: 0 8px 20px rgba(183, 28, 28, 0.05);
         transition: transform 0.2s ease;
     }
     .card:hover {
         transform: translateY(-5px);
-        border-color: #FFB74D;
+        border-color: #EF5350;
     }
     
+    /* 句子卡片：左側改為深紅色線條 */
     .sentence-card {
         background-color: #FFFFFF;
         padding: 20px 25px;
         border-radius: 16px;
         margin-bottom: 15px;
-        border-left: 5px solid #FF6F00;
+        border-left: 6px solid #C62828;
         box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     }
     
+    /* 大字體：強調色改為深紅橘色 */
     .big-font {
         font-size: 26px !important;
         font-weight: 800;
-        color: #BF360C !important;
+        color: #BF360C !important; 
         margin: 8px 0;
         letter-spacing: 0.5px;
     }
@@ -101,16 +108,18 @@ st.markdown("""
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
     }
     
+    /* 動作標籤：淡紅色背景 */
     .action-tag {
-        color: #E65100 !important;
+        color: #B71C1C !important;
         font-size: 13px;
         font-weight: 600;
-        background: #FFCCBC;
+        background: #FFEBEE;
         padding: 4px 12px;
         border-radius: 12px;
         display: inline-block;
     }
 
+    /* Tab 樣式 */
     .stTabs [data-baseweb="tab-list"] { gap: 8px; }
     .stTabs [data-baseweb="tab"] {
         background-color: rgba(255,255,255,0.6);
@@ -120,17 +129,18 @@ st.markdown("""
         color: #5D4037 !important;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #FF8F00 !important;
+        background-color: #FF5252 !important;
         color: #FFFFFF !important;
     }
     
     .stRadio label {
         font-size: 18px !important;
         padding: 10px;
-        background: rgba(255,255,255,0.5);
+        background: rgba(255,255,255,0.8);
         border-radius: 10px;
         margin-bottom: 5px;
         display: block;
+        border: 1px solid #FFCDD2;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -250,7 +260,7 @@ if 'q1_data' not in st.session_state:
 def show_learning_mode():
     st.markdown("""
         <div style='text-align: center; margin-bottom: 30px;'>
-            <h2 style='color: #BF360C !important; font-size: 32px; margin: 0; font-weight:800;'>Sanek</h2>
+            <h2 style='color: #C62828 !important; font-size: 32px; margin: 0; font-weight:800;'>Sanek</h2>
             <div style='color: #FF6F00 !important; font-size: 18px; margin-top: 8px; font-weight:500;'>
                 — 是什麼味道？ —
             </div>
@@ -286,16 +296,16 @@ def show_learning_mode():
     for s in SENTENCES:
         st.markdown(f"""
         <div class="sentence-card">
-            <div style="font-size: 20px; font-weight:800; color:#BF360C !important; margin-bottom: 8px;">
+            <div style="font-size: 20px; font-weight:800; color:#C62828 !important; margin-bottom: 8px;">
                 {s['amis']}
             </div>
-            <div style="color:#5D4037 !important; font-size: 16px;">{s['zh']}</div>
+            <div style="color:#4E342E !important; font-size: 16px;">{s['zh']}</div>
         </div>
         """, unsafe_allow_html=True)
         play_audio(s['amis'], filename_base=s['file'])
 
 def show_quiz_mode():
-    st.markdown("<h3 style='text-align: center; color: #E65100 !important; margin-bottom: 20px;'>🏆 隨機挑戰賽</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #D32F2F !important; margin-bottom: 20px;'>🏆 隨機挑戰賽</h3>", unsafe_allow_html=True)
     
     st.progress(st.session_state.current_q / 3)
     st.write("") 
@@ -334,7 +344,7 @@ def show_quiz_mode():
         st.markdown(f"當你吃到 **{target['zh_food']} ({target['food']})**，你會說：")
         
         st.markdown(f"""
-        <div style="background:#FFFFFF; padding:20px; border-radius:15px; border-left: 6px solid #FF6F00; margin: 15px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        <div style="background:#FFFFFF; padding:20px; border-radius:15px; border-left: 6px solid #D32F2F; margin: 15px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
             <span style="font-size:20px; color:#333 !important;">Tada <b>_______</b> ko {target['food']}!</span>
             <br><span style="color:#888; font-size:15px;">({target['zh_food']}好{target['zh_taste']}！)</span>
         </div>
@@ -380,8 +390,8 @@ def show_quiz_mode():
     else:
         st.markdown(f"""
         <div style='text-align: center; padding: 40px; background-color: #FFFFFF; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);'>
-            <h1 style='color: #E65100 !important; margin-bottom:10px;'>🎉 挑戰成功！</h1>
-            <p style='font-size: 20px; color: #5D4037 !important;'>你的聽力越來越好了！</p>
+            <h1 style='color: #C62828 !important; margin-bottom:10px;'>🎉 挑戰成功！</h1>
+            <p style='font-size: 20px; color: #4E342E !important;'>你的聽力越來越好了！</p>
             <div style='font-size: 80px; margin: 20px 0;'>🥘</div>
         </div>
         """, unsafe_allow_html=True)
@@ -404,4 +414,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
