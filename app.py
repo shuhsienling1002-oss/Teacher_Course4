@@ -263,7 +263,7 @@ def show_learning_mode():
         <div style='text-align: center; margin-bottom: 30px;'>
             <h2 style='color: #BF360C !important; font-size: 32px; margin: 0; font-weight:800;'>Sanek</h2>
             <div style='color: #FF6F00 !important; font-size: 18px; margin-top: 8px; font-weight:500;'>
-                — O Maan a Sanek? (是什麼味道？) —
+                — 是什麼味道？ —
             </div>
             <div style='color: #8D6E63 !important; font-size: 15px; margin-top: 15px; font-weight: 500;'>
                 講師：高春美 &nbsp;&nbsp; 教材提供者：高春美
@@ -415,3 +415,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
